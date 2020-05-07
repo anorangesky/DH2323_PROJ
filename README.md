@@ -4,8 +4,7 @@
 <p> By: </p>
 <p> Vendela Vlk, vendelav@kth.se </p>
 <p> Agnes Petäjävaara, agnespet@kth.se </p>
-<a href="https://projectapvv.wordpress.com/"> 
-<p> Workbook </p> 
+<a href="https://projectapvv.wordpress.com/"> Workbook </a>
 </hr>
 <p>To run on linux:</p> 
 <code>$ cmake CMakeLists.txt</code>
