@@ -8,7 +8,6 @@ using namespace std;
 using glm::vec3;
 using glm::mat3; //3x3 matrix
 
-//Task 2.3: 
 struct Intersection{
 	vec3 position;
 	float distance;
@@ -22,21 +21,14 @@ const float SCREEN_HEIGHT = 100;
 SDL_Surface* screen;
 int t;
 vector<Triangle> triangles; //used to store all triangles globally
-
-//task 2.3:
 float focalLength = ((SCREEN_HEIGHT+SCREEN_WIDTH)/2)/2;
 vec3 cameraPos( 0, 0, -2);
-
-
-//task 4:
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.01; //constant for camera view change 
 // vec3 right( R[0][0], R[0][1], R[0][2] );
 // vec3 down( R[1][0], R[1][1], R[1][2] );
 // vec3 forward( R[2][0], R[2][1], R[2][2] );
-
-//task 5:
 vec3 lightPos( 0, -0.5, -0.7 ); // light position
 vec3 lightColor = 14.f * vec3( 1, 1, 1 ); //light power for each color component
 vec3 indirectLight = 0.5f*vec3(1, 1, 1);
