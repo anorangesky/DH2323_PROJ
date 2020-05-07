@@ -4,8 +4,11 @@
 <p> By: </p>
 <p> Vendela Vlk, vendelav@kth.se </p>
 <p> Agnes Petäjävaara, agnespet@kth.se </p>
+<p> Workbook: </p> <a href="https://projectapvv.wordpress.com/"> 
 </hr>
 <p>To run on linux:</p> 
 <code>$ cmake CMakeLists.txt</code>
+
 <code>$ make</code>
+
 <code>$ ./SecondLab</code>
