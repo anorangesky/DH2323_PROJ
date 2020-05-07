@@ -6,6 +6,6 @@
 <p> Agnes Petäjävaara, agnespet@kth.se </p>
 
 <p>To run on linux:</p> 
- <code> $ cmake CMakeLists.txt  </code>
- <code> $ make  </code>
+ <code> $ cmake CMakeLists.txt  <hr>
+ <code> $ make <hr>
  <code> $ ./SecondLab  </code>
