@@ -14,4 +14,4 @@
 
 <code>$ ./SecondLab</code>
 
-<p>Hej!</p> 
+<p>Hej</p> 
