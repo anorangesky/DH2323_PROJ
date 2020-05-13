@@ -28,7 +28,8 @@ float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.01; //constant for camera view change 
 vec3 lightPos( 0, 0, 0); // light position
 vec3 lightColor = 14.f * vec3( 1, 1, 1 ); //light power for each color component
-vec3 indirectLight = 0.5f*vec3(1, 1, 1);
+
+//vec3 indirectLight = 0.5f*vec3(1, 1, 1); //this should not be included in Phong
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -134,7 +135,12 @@ void Draw(){
 			// 3. If true -> set the color of the pixel to the color of the intersected triangle
 				vec3 color(triangles[closestInt.triangleIndex].color);
 				vec3 directLight = DirectLight(closestInt);
-				PutPixelSDL( screen, x, y, color*(directLight + indirectLight));
+				PutPixelSDL( screen, x, y, color*(directLight ));//+ indirectLight));
+				// 
+				//	TODO - 200513-
+				//		PutPixelSDL should multiply the color with only directLight.
+				//		BUT the direct light should be computed using PHONG reflection model
+				//		AS: Phong = specular + diffuse + ambient + emissive
 			}else{ 
 			// 4. Else -> set it to black 
 				vec3 black(0, 0, 0);
@@ -167,6 +173,7 @@ vec3 DirectLight( const Intersection& i ){
 		//	2. the index (i.index) is used in triangles[i.index].normal to get the normal of the surface
 		vec3 n = triangles[i.triangleIndex].normal;
 		//	3. compute the direction using "D = (P * max(r dot n, 0))/4*pi*r²" 
+		// 
 		float dot = glm::dot(glm::normalize(r), n);
 		D = (lightColor * std::max(dot, 0.f));
 		float fourPi = 4*M_PI;
@@ -225,5 +232,22 @@ bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,I
 	return hit;
 }
 
+/*
+--------- SECRET MSG ------------
+This message is encrypted. You can decrypt and read it at
+https://safemess.com/?r=sdYql9oglCpI&t=1gEbdfXeu15XgcNmEsBXuA 
+----------------------------------------------------------------------
+
+OQLiA/Xeu15mcPdB5evYOs0unZgVOZRDJshEDdE8EKbQg5IqtU9Fmn44xsQ3JeNlFKhA
+LZaWlJDZxw7Gqx156z17oRy66YEo3MdLrqU3ECUrp4/4BICSq/DlWgWQKl3z7qflIbda
+/bjCvS6OyikpUyRubVrOHpcKDiABvHeIAhfjQ779isAtcIkFGOOQEeBVS5XzkgpwFbr+
+esnOFIEbDvsyOvougj6AMcnvWfdotJWjYBIe43F5NCoKmwGTXkefYaBF/bq04oT2
+
+----------------------------------------------------------------------
+This message is encrypted. You can decrypt and read it at
+https://safemess.com/?r=sdYql9oglCpI&t=1gEbdfXeu15XgcNmEsBXuA 
+
+
+*/
 
 
