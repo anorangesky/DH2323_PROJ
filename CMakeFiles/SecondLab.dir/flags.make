@@ -6,5 +6,5 @@ CXX_FLAGS =
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/include/SDL -I/home/agnes/Documents/dh2323/labs/CgLab2/glm 
+CXX_INCLUDES = -I/usr/include/SDL -I/home/agnes/Documents/dh2323/project/glm 
 

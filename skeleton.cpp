@@ -16,8 +16,8 @@ struct Intersection{
 
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
-const float SCREEN_WIDTH = 100;
-const float SCREEN_HEIGHT = 100;
+const float SCREEN_WIDTH = 300;
+const float SCREEN_HEIGHT = 300;
 SDL_Surface* screen;
 int t;
 vector<Triangle> triangles; //used to store all triangles globally
@@ -61,7 +61,7 @@ void Update()
 	int t2 = SDL_GetTicks();
 	float dt = float(t2-t);
 	t = t2;
-	cout << "	Render time: " << dt << " ms." << endl;
+	cout << "	Agnes time: " << dt << " ms." << endl;
 
 	Uint8* keystate = SDL_GetKeyState( 0 );
 	vec3 right(R[0][0], R[0][1], R[0][2]);

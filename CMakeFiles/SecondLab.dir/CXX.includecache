@@ -6,21 +6,21 @@
 
 #IncludeRegexTransform: 
 
-/home/agnes/Documents/dh2323/labs/CgLab2/SDLauxiliary.h
+/home/agnes/Documents/dh2323/project/SDLauxiliary.h
 SDL.h
-/home/agnes/Documents/dh2323/labs/CgLab2/SDL.h
+/home/agnes/Documents/dh2323/project/SDL.h
 iostream
 -
 glm/glm.hpp
 -
 
-/home/agnes/Documents/dh2323/labs/CgLab2/TestModel.h
+/home/agnes/Documents/dh2323/project/TestModel.h
 glm/glm.hpp
 -
 vector
 -
 
-/home/agnes/Documents/dh2323/labs/CgLab2/skeleton.cpp
+/home/agnes/Documents/dh2323/project/skeleton.cpp
 iostream
 -
 glm/glm.hpp
@@ -28,9 +28,9 @@ glm/glm.hpp
 SDL.h
 -
 SDLauxiliary.h
-/home/agnes/Documents/dh2323/labs/CgLab2/SDLauxiliary.h
+/home/agnes/Documents/dh2323/project/SDLauxiliary.h
 TestModel.h
-/home/agnes/Documents/dh2323/labs/CgLab2/TestModel.h
+/home/agnes/Documents/dh2323/project/TestModel.h
 
 /usr/include/SDL/SDL.h
 SDL_main.h

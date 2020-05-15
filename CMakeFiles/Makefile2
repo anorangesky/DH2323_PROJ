@@ -44,10 +44,10 @@ RM = /usr/local/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/agnes/Documents/dh2323/labs/CgLab2
+CMAKE_SOURCE_DIR = /home/agnes/Documents/dh2323/project
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/agnes/Documents/dh2323/labs/CgLab2
+CMAKE_BINARY_DIR = /home/agnes/Documents/dh2323/project
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -74,14 +74,14 @@ clean: CMakeFiles/SecondLab.dir/clean
 CMakeFiles/SecondLab.dir/all:
 	$(MAKE) -f CMakeFiles/SecondLab.dir/build.make CMakeFiles/SecondLab.dir/depend
 	$(MAKE) -f CMakeFiles/SecondLab.dir/build.make CMakeFiles/SecondLab.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/agnes/Documents/dh2323/labs/CgLab2/CMakeFiles --progress-num=1,2 "Built target SecondLab"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/agnes/Documents/dh2323/project/CMakeFiles --progress-num=1,2 "Built target SecondLab"
 .PHONY : CMakeFiles/SecondLab.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/SecondLab.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/agnes/Documents/dh2323/labs/CgLab2/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/agnes/Documents/dh2323/project/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/SecondLab.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/agnes/Documents/dh2323/labs/CgLab2/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/agnes/Documents/dh2323/project/CMakeFiles 0
 .PHONY : CMakeFiles/SecondLab.dir/rule
 
 # Convenience name for target.
