@@ -160,8 +160,9 @@ void Draw(){
 	SDL_UpdateRect( screen, 0, 0, 0, 0 );
 }
 
-//**** EMISSIVE ILLUMINATION COMPONENT ***
-// returns [R,G,B] - vector
+// **** EMISSIVE ILLUMINATION COMPONENT ****
+// ** returns RGB - vector of the emissive illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
 vec3 EmmisiveComponent(){
 	float ce = 0; //emissive constant is 0 because the rendered scene is not emissive
 	
