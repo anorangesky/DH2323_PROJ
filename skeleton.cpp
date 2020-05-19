@@ -5,13 +5,14 @@
 #include "TestModel.h"
 
 using namespace std;
-using glm::vec3;
+using glm::vec3; //GLM stands for 'OpenGL Mathematics' 
 using glm::mat3; //3x3 matrix
 
 struct Intersection{
 	vec3 position;
 	float distance;
 	int triangleIndex;
+	vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
 };
 
 // ----------------------------------------------------------------------------
@@ -25,9 +26,9 @@ float focalLength = ((SCREEN_HEIGHT+SCREEN_WIDTH)/2)/2;
 vec3 cameraPos( 0, 0, -2);
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
-const float change = 0.01; //constant for camera view change 
+const float change = 0.05; //constant for camera view change 
 vec3 lightPos( 0, 0, 0); // light position
-vec3 lightColor = 14.f * vec3( 1, 1, 1 ); //light power for each color component
+vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light intensity (power) for each color component
 
 //vec3 indirectLight = 0.5f*vec3(1, 1, 1); //this should not be included in Phong
 
@@ -36,7 +37,9 @@ vec3 lightColor = 14.f * vec3( 1, 1, 1 ); //light power for each color component
 void Update();
 void Draw();
 bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
-vec3 DirectLight( const Intersection& i ); 
+//vec3 DirectLight( const Intersection& i ); 
+vec3 AmbientLight();
+
 
 int main( int argc, char* argv[] )
 {
@@ -134,13 +137,16 @@ void Draw(){
 			if(hit){
 			// 3. If true -> set the color of the pixel to the color of the intersected triangle
 				vec3 color(triangles[closestInt.triangleIndex].color);
-				vec3 directLight = DirectLight(closestInt);
-				PutPixelSDL( screen, x, y, color*(directLight ));//+ indirectLight));
+				//vec3 directLight = DirectLight(closestInt);
+				vec3 ambient = AmbientLight();
+				PutPixelSDL( screen, x, y, color);//+ indirectLight));
 				// 
 				//	TODO - 200513-
 				//		PutPixelSDL should multiply the color with only directLight.
 				//		BUT the direct light should be computed using PHONG reflection model
-				//		AS: Phong = specular + diffuse + ambient + emissive
+				//		AS: phong = specular + diffuse + ambient + emissive
+				// 		Like: 
+				//		PutPixelSDL( screen, x, y, color*phong);
 			}else{ 
 			// 4. Else -> set it to black 
 				vec3 black(0, 0, 0);
@@ -153,6 +159,21 @@ void Draw(){
 		SDL_UnlockSurface(screen);
 
 	SDL_UpdateRect( screen, 0, 0, 0, 0 );
+}
+
+// **** AMBIENT COMPONENT ILLUMINATION ****
+// TODO: Use an intersection's surface material to find the ambient constant
+// TODO: Make the scene render a global ambient light intensity ([R,G,B]-triplet)
+// returns the ambient illumination 
+vec3 AmbientLight(){
+	//TODO: how to render the surface material?
+	//TODO: Should the ambient constant be specific for each intersection
+	
+	float ca = 0.1; //ambient constant
+	vec3 illumination_a; // Ambient illumination
+	illumination_a = ca * lightColor; // multiply constant with scene light intensity
+	return illumination_a;
+
 }
 
 //takes an intersection and returns the direct illumination vector
@@ -232,22 +253,5 @@ bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,I
 	return hit;
 }
 
-/*
---------- SECRET MSG ------------
-This message is encrypted. You can decrypt and read it at
-https://safemess.com/?r=sdYql9oglCpI&t=1gEbdfXeu15XgcNmEsBXuA 
-----------------------------------------------------------------------
-
-OQLiA/Xeu15mcPdB5evYOs0unZgVOZRDJshEDdE8EKbQg5IqtU9Fmn44xsQ3JeNlFKhA
-LZaWlJDZxw7Gqx156z17oRy66YEo3MdLrqU3ECUrp4/4BICSq/DlWgWQKl3z7qflIbda
-/bjCvS6OyikpUyRubVrOHpcKDiABvHeIAhfjQ779isAtcIkFGOOQEeBVS5XzkgpwFbr+
-esnOFIEbDvsyOvougj6AMcnvWfdotJWjYBIe43F5NCoKmwGTXkefYaBF/bq04oT2
-
-----------------------------------------------------------------------
-This message is encrypted. You can decrypt and read it at
-https://safemess.com/?r=sdYql9oglCpI&t=1gEbdfXeu15XgcNmEsBXuA 
-
-
-*/
 
 
