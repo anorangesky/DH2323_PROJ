@@ -27,16 +27,15 @@ mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.01; //constant for camera view change 
 vec3 lightPos( 0, 0, 0); // light position
-vec3 lightColor = 14.f * vec3( 1, 1, 1 ); //light power for each color component
+vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power for each color component
 
-//vec3 indirectLight = 0.5f*vec3(1, 1, 1); //this should not be included in Phong
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 void Update();
 void Draw();
 bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
-vec3 DirectLight( const Intersection& i ); 
+//vec3 DirectLight( const Intersection& i ); 
 
 int main( int argc, char* argv[] )
 {
@@ -132,17 +131,23 @@ void Draw(){
 			// 2. Call closestIntersection to get the closest intersesction in that direction
 			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
 			if(hit){
-			// 3. If true -> set the color of the pixel to the color of the intersected triangle
-				vec3 color(triangles[closestInt.triangleIndex].color);
-				vec3 directLight = DirectLight(closestInt);
-				PutPixelSDL( screen, x, y, color*(directLight ));//+ indirectLight));
-				// 
-				//	TODO - 200513-
+			// 3. set the color of the pixel to the color of the intersected triangle
+				//**** PHONG REFLECTION MODEL ****
 				//		PutPixelSDL should multiply the color with only directLight.
 				//		BUT the direct light should be computed using PHONG reflection model
 				//		AS: Phong = specular + diffuse + ambient + emissive
+				
+				vec3 color(triangles[closestInt.triangleIndex].color);
+				// *** Uncoment when testing your implementation ***
+				//vec3 emissive = EmmisiveComponent();
+				//vec3 ambient = AmbientComponent();
+				//vec3 diffuse = DiffuseComponent();
+				//vec3 specular = SpecularComponent;
+				//vec3 phong = emissive + ambient + diffuse + specular;
+				PutPixelSDL( screen, x, y, color); //*phong);
+
 			}else{ 
-			// 4. Else -> set it to black 
+			// 4. set it to black 
 				vec3 black(0, 0, 0);
 				PutPixelSDL( screen, x, y, black );
 			}
