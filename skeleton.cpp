@@ -162,9 +162,10 @@ void Draw(){
 }
 
 // **** AMBIENT COMPONENT ILLUMINATION ****
+// ** returns [R,G,B]-triplet of the ambient illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
 // TODO: Use an intersection's surface material to find the ambient constant
 // TODO: Make the scene render a global ambient light intensity ([R,G,B]-triplet)
-// returns the ambient illumination 
 vec3 AmbientLight(){
 	//TODO: how to render the surface material?
 	//TODO: Should the ambient constant be specific for each intersection
