@@ -132,10 +132,12 @@ void Draw(){
 			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
 			if(hit){
 			// 3. set the color of the pixel to the color of the intersected triangle
+				
 				//**** PHONG REFLECTION MODEL ****
-				//		PutPixelSDL should multiply the color with only directLight.
-				//		BUT the direct light should be computed using PHONG reflection model
-				//		AS: Phong = specular + diffuse + ambient + emissive
+				// ** adds the four illumination components together **
+				// ** PutPixelSDL render the scene by multiplying intersected color with directLight **
+				// ** Direct light -> Phong = specular + diffuse + ambient + emissive **
+				// **** By: agnespet@kth.se 2020-05-19 ****
 				
 				vec3 color(triangles[closestInt.triangleIndex].color);
 				// *** Uncoment when testing your implementation ***
