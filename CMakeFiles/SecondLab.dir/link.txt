@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/SecondLab.dir/skeleton.cpp.o  -o SecondLab  -Wl,-Bstatic -lSDLmain -Wl,-Bdynamic -lSDL -lpthread 

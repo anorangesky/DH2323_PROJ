@@ -1,3 +1,0 @@
-/home/agnes/Documents/dh2323/project/CMakeFiles/rebuild_cache.dir
-/home/agnes/Documents/dh2323/project/CMakeFiles/SecondLab.dir
-/home/agnes/Documents/dh2323/project/CMakeFiles/edit_cache.dir
