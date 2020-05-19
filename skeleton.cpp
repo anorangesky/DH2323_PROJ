@@ -16,8 +16,9 @@ struct Intersection {
 
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
-const float SCREEN_WIDTH = 500;
-const float SCREEN_HEIGHT = 500;
+const float SCREEN_WIDTH = 300;
+const float SCREEN_HEIGHT = 300;
+
 SDL_Surface* screen;
 int t;
 vector<Triangle> triangles; //used to store all triangles globally
@@ -26,6 +27,7 @@ vec3 cameraPos(0, 0, -2);
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.01; //constant for camera view change 
+
 //vec3 lightPos(0, 0, 0); // light position
 vec3 lightPos(0, -0.5, -0.7);
 vec3 lightColor = 14.f * vec3(1, 1, 1); //light power for each color component
@@ -38,12 +40,13 @@ vec3 indirectLight = 0.5f*vec3(1, 1, 1); //this should not be included in Phong
 // FUNCTIONS
 void Update();
 void Draw();
+
 bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection);
-vec3 DirectLight(const Intersection& i);
+//vec3 DirectLight( const Intersection& i ); 
 
 // PROJEKT
 vec3 DiffuseComp(const Intersection& i);
-vec3 AmbientComp();
+//vec3 AmbientComp();
 
 int main(int argc, char* argv[])
 {
@@ -68,7 +71,7 @@ void Update()
 	int t2 = SDL_GetTicks();
 	float dt = float(t2 - t);
 	t = t2;
-	cout << "	Render time: " << dt << " ms." << endl;
+	cout << "	Agnes time: " << dt << " ms." << endl;
 
 	Uint8* keystate = SDL_GetKeyState(0);
 	vec3 right(R[0][0], R[0][1], R[0][2]);
@@ -138,23 +141,27 @@ void Draw() {
 			vec3 d(x - (SCREEN_WIDTH / 2), y - (SCREEN_HEIGHT / 2), focalLength);
 			// 2. Call closestIntersection to get the closest intersesction in that direction
 			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
-			if (hit) {
-				// 3. If true -> set the color of the pixel to the color of the intersected triangle
-				vec3 color(triangles[closestInt.triangleIndex].color);
-				//vec3 directLight = DirectLight(closestInt);
-				//PutPixelSDL(screen, x, y, color*(directLight));	//+ indirectLight));
-				// 
-				//	TODO - 200513-
-				//		PutPixelSDL should multiply the color with only directLight.
-				//		BUT the direct light should be computed using PHONG reflection model
-				//		AS: Phong = specular + diffuse + ambient + emissive
 
-				// The diffuse component with last part of formula: color - color of closest intersected triangle
-				vec3 diffuseComp = color * DiffuseComp(closestInt);
-				PutPixelSDL(screen, x, y, diffuseComp);
-			}
-			else {
-				// 4. Else -> set it to black 
+			if(hit){
+			// 3. set the color of the pixel to the color of the intersected triangle
+				
+				//**** PHONG REFLECTION MODEL ****
+				// ** adds the four illumination components together **
+				// ** PutPixelSDL render the scene by multiplying intersected color with directLight **
+				// ** Direct light -> Phong = specular + diffuse + ambient + emissive **
+				// **** By: agnespet@kth.se 2020-05-19 ****
+				
+				vec3 color(triangles[closestInt.triangleIndex].color);
+				// *** Uncoment when testing your implementation ***
+				//vec3 emissive = EmmisiveComponent();
+				//vec3 ambient = AmbientComponent();
+				vec3 diffuse = DiffuseComponent();
+				//vec3 specular = SpecularComponent;
+				//vec3 phong = emissive + ambient + diffuse + specular;
+				PutPixelSDL( screen, x, y, color * diffuse); //*phong);
+
+			} else { 
+			// 4. set it to black 
 				vec3 black(0, 0, 0);
 				PutPixelSDL(screen, x, y, black);
 			}
@@ -167,9 +174,12 @@ void Draw() {
 	SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
+// **** DIFFUSE COMPONENT ILLUMINATION ****
+// ** returns the intensity of the diffuse illumination as a 3D-vector **
+// **** By: vendelav@kth.se 2020-05-19 ****
 vec3 DiffuseComp(const Intersection& i) {
 
-	// The formula to use for the diffuse component:
+	// The equation to use for the diffuse component:
 	// Idiffuse = kd * Ild * (l.normal . n)
 
 	float kd = 1.0; // Diffuse surface constant
@@ -177,9 +187,9 @@ vec3 DiffuseComp(const Intersection& i) {
 	vec3 l = lightPos - i.position; // Direction from surface to lightsource
 	vec3 n = triangles[i.triangleIndex].normal; // Surface normal
 	float dot = glm::dot(glm::normalize(l), n); // Angle between vector from surface to light source and surface normal
-	// If the surface is turned away from the light source (angle < 0) 
+	// If the surface is perpendicular or turned away from the light source (angle <= 0) 
 	// return 0, otherwise the angle so we can color the surface accordingly
-	dot = dot < 0 ? 0.0f : dot;
+	dot = dot <= 0 ? 0.0f : dot;
 
 	vec3 diffuseComp = kd * Ild * dot;
 	return diffuseComp;
