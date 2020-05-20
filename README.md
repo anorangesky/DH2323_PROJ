@@ -12,3 +12,4 @@
 <p> 1. -> "cmake CMakeLists.txt" </p>
 <p> 2. -> "make" </p>
 <p> 3. -> "./SecondLab" </p>
+
