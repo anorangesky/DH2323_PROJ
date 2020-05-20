@@ -40,6 +40,8 @@ bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,I
 vec3 EmmisiveComponent();
 vec3 AmbientComponent();
 vec3 DiffuseComponent(const Intersection& i);
+vec3 SpecularComponent(const Intersection& i);
+
 
 
 int main( int argc, char* argv[] )
@@ -214,6 +216,41 @@ vec3 DiffuseComponent(const Intersection& i) {
 
 	vec3 diffuseComp = kd * Ild * dot;
 	return diffuseComp;
+}
+
+// **** SPECULAR COMPONENT ILLUMINATION ****
+// ** takes the closest intersection of ray and surface and **
+// ** returns the intensity of the specular illumination as a 3D-vector **
+// **** By: vendelav@kth.se 2020-05-19 ****
+vec3 SpecularComp(const Intersection& i) {
+
+	// Equation for computing the specular component
+	// Ispecular = cs * Ils * (r.normal . v.normal)^n
+
+	float cs = 1.0; // Specular surface constant
+	vec3 Ils = vec3(1, 1, 1); // Light specular intensity
+	int n = 32; // Shininess constant, regulates size of specular highlights
+
+	// 1. To compute r we need angle between surface normal and vector from light source to surface
+	// r = (2 * dot) * surfaceNormal - dir
+
+	vec3 dir = lightPos - i.position; // Direction from surface to lightsource
+	vec3 surfaceNormal = triangles[i.triangleIndex].normal; // Surface normal
+	float dot = glm::dot(glm::normalize(dir), surfaceNormal); // Angle between vector from surface to light source and surface normal
+	// If the light rays doesn't hit a point on the surface (angle <= 0) 
+	// return 0, otherwise return the angle so we can color the surface accordingly
+	dot = dot <= 0 ? 0.0f : dot;
+
+	vec3 r = (2 * dot) * surfaceNormal - dir; // The direction a perfectly reflected ray of light would take
+
+	// 2. To get v we need to get the vector from the surface to the camera position
+	vec3 v = cameraPos - i.position;
+	// Dot product between direction of reflected ray of light and vector from surface to camera position
+	float dotr = glm::dot(glm::normalize(r), glm::normalize(v));
+
+	// 3. The final step of the equation multiplying angle raised to the power of the shininess constant with our set variables
+	vec3 specularComp = cs * Ils * pow(dotr, n);
+	return specularComp;
 }
 
 //**** From Lab2 ****
