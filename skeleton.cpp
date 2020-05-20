@@ -12,7 +12,7 @@ struct Intersection{
 	vec3 position;
 	float distance;
 	int triangleIndex;
-  vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
+  	// vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
 
 };
 
