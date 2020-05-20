@@ -28,7 +28,7 @@ mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.05; //constant for camera view change 
 vec3 lightPos(0, -0.5, -0.7); // light position
-vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
+vec3 lightColor = 1.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
 #define M_PI  3.14159265358979323846  // This is from branch Diffuse --is it needed?
 
 // ----------------------------------------------------------------------------
@@ -144,16 +144,14 @@ void Draw(){
 				// ** adds the four illumination components together **
 				// ** PutPixelSDL render the scene by multiplying intersected color with directLight **
 				// ** Direct light -> Phong = specular + diffuse + ambient + emissive **
-				// **** By: agnespet@kth.se 2020-05-19 ****
-				
+				// **** By: agnespet@kth.se 2020-05-20 ****
 				vec3 color(triangles[closestInt.triangleIndex].color);
-				// *** Uncoment when testing a specific illumination component ***
-				//vec3 emissive = EmmisiveComponent();
-				//vec3 ambient = AmbientComponent();
-				//vec3 diffuse = DiffuseComponent();
-				//vec3 specular = SpecularComponent;
-				//vec3 phong = emissive + ambient + diffuse + specular;
-				PutPixelSDL( screen, x, y, color); //*phong);
+				vec3 emissive = EmmisiveComponent();
+				vec3 ambient = AmbientComponent();
+				vec3 diffuse = DiffuseComponent(closestInt);
+				vec3 specular = SpecularComponent(closestInt);
+				vec3 phong = emissive + ambient + diffuse + specular;
+				PutPixelSDL( screen, x, y, color *phong);
         
 			}else{ 
 			// 4. set it to black 
@@ -204,9 +202,10 @@ vec3 DiffuseComponent(const Intersection& i) {
 
 	// The equation to use for the diffuse component:
 	// Idiffuse = kd * Ild * (l.normal . n)
+	Intersection a; // used when computing for shadow
+	float cd = 1.0; // Diffuse surface constant
+	vec3 Ild(1, 1, 1); // Diffuse light intensity //QUESTION: why are you not using: 'lightColor'?
 
-	float kd = 1.0; // Diffuse surface constant
-	vec3 Ild(1, 1, 1); // Diffuse light intensity
 	vec3 l = lightPos - i.position; // Direction from surface to lightsource
 	vec3 n = triangles[i.triangleIndex].normal; // Surface normal
 	float dot = glm::dot(glm::normalize(l), n); // Angle between vector from surface to light source and surface normal
@@ -214,7 +213,19 @@ vec3 DiffuseComponent(const Intersection& i) {
 	// return 0, otherwise the angle so we can color the surface accordingly
 	dot = dot <= 0 ? 0.0f : dot;
 
-	vec3 diffuseComp = kd * Ild * dot;
+	//** all black shadow, agnes verison **
+	//calculate the unit vector describing the direction from the surface to the light source
+	float rDist = glm::distance(lightPos, i.position);
+	ClosestIntersection(i.position, l, triangles, a);
+	//surface is in shadow if the distance to closest intersecting surface is closer than the light source
+	if (a.triangleIndex != i.triangleIndex && a.distance < rDist) {
+		// In shadow -> return color black [0,0,0]
+		vec3 black(0,0,0);
+		return black;
+	}
+
+	//vec3 diffuseComp = cd * Ild * dot;
+	vec3 diffuseComp = cd * lightColor * dot; //agnes version 
 	return diffuseComp;
 }
 
@@ -222,14 +233,18 @@ vec3 DiffuseComponent(const Intersection& i) {
 // ** takes the closest intersection of ray and surface and **
 // ** returns the intensity of the specular illumination as a 3D-vector **
 // **** By: vendelav@kth.se 2020-05-19 ****
+// TODO1: (added by Agnes) add gloss on the red and blue boxes, I think we should use ClosestIntersection() for that 
+// TODO2: (Added by Agnes) How is this function fucking with the shadow not being black in diffuse()?
+// TODO3: (Added by Agnes) Why do we have 4 light-sources? (one for each wall) (check description in "implementation notes/phong") (change to 100px when moving around)
 vec3 SpecularComponent(const Intersection& i) {
 
 	// Equation for computing the specular component
 	// Ispecular = cs * Ils * (r.normal . v.normal)^n
 
-	float cs = 1.0; // Specular surface constant
-	vec3 Ils = vec3(1, 1, 1); // Light specular intensity
-	int n = 32; // Shininess constant, regulates size of specular highlights
+	float cs = 1.0; // Specular surface constant //QUESTION: why this value?
+	vec3 Ils = vec3(1, 1, 1); // Light specular intensity //QUESTION: why are you not using: 'lightColor'?
+
+	int n = 32; // Shininess constant, regulates size of specular highlights //QUESTION: why 32?
 
 	// 1. To compute r we need angle between surface normal and vector from light source to surface
 	// r = (2 * dot) * surfaceNormal - dir
@@ -243,17 +258,20 @@ vec3 SpecularComponent(const Intersection& i) {
 
 	vec3 r = (2 * dot) * surfaceNormal - dir; // The direction a perfectly reflected ray of light would take
 
-	// 2. To get v we need to get the vector from the surface to the camera position
+	// 2. To get v we need to get the vector from the surface to the camera position //QUESTION: what is 'v' ? 
 	vec3 v = cameraPos - i.position;
 	// Dot product between direction of reflected ray of light and vector from surface to camera position
 	float dotr = glm::dot(glm::normalize(r), glm::normalize(v));
 
 	// 3. The final step of the equation multiplying angle raised to the power of the shininess constant with our set variables
 	float powerShiny = pow(dotr, n);
-	vec3 specularComp = cs*Ils*powerShiny;
+	//vec3 specularComp = cs*Ils*powerShiny;
+	vec3 specularComp = cs * lightColor *powerShiny;
+
 	return specularComp;
 }
 
+//			NOT IN USE, REMOVE BF SUBMISSION				!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //**** From Lab2 ****
 //** takes an intersection **
 //** returns the direct illumination vector **
@@ -290,7 +308,7 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles
 	float m = std::numeric_limits<float>::max();
 	closestIntersection.distance = m;
 
-	for (int i = 0; i < triangles.size(); ++i) {
+	for (int i = 0; i < triangles.size(); i++) {
 		//Intersection computations:
 		vec3 v0 = triangles[i].v0;
 		vec3 v1 = triangles[i].v1;
@@ -316,17 +334,17 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles
 
 		// if the intersection occured within the triangle and 
 		//	after the beginning of the ray
-		if ((u >= 0) && (v >= 0) && ((u + v) <= 1) && (t > 0)) {
+		if ((u >= 0) && (v >= 0) && ((u + v) < 1) && (t > 0)) {
 			//return true 
 			hit = true;
 			//and update closestIntersection with:
 			vec3 r2 = start + (t*dir);
-			//float distance = glm::distance(r2, start); //instead of "t"?
-			if (t <= closestIntersection.distance) {
+			float distance = glm::distance(r2, start); 
+			if (distance <= closestIntersection.distance) {
 				// 1. 3D position of the closest intersection
 				closestIntersection.position = r2;
 				// 2. the distance from start to the intersected triangle
-				closestIntersection.distance = t;
+				closestIntersection.distance = distance;
 				// 3. Index of the ray that was intersected
 				closestIntersection.triangleIndex = i;
 			}
