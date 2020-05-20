@@ -13,3 +13,12 @@
 <p> 2. -> "make" </p>
 <p> 3. -> "./SecondLab" </p>
 
+The project contains the folowing files: 
+- skeleton.cpp
+- TestModel.h
+- SDLauxiliary.h
+- README.md
+- CMakeLists.txt
+- glm/ [this is a folder]
+
+
