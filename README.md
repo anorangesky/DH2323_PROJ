@@ -6,3 +6,9 @@
 <p style="text-align: left;"><em>Vendela Vlk, <a href="mailto:vendelav@kth.se">vendelav@kth.se</a></em></p>
 </blockquote>
 <p>&nbsp;</p>
+
+<h3> Run it on Linux </h3>
+<p> 0. Prel. install SDL -> "sudo apt-get install libsdl1.2-dev libsdl1.2debian"</p>
+<p> 1. -> "cmake CMakeLists.txt" </p>
+<p> 2. -> "make" </p>
+<p> 3. -> "./SecondLab" </p>

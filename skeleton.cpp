@@ -1,18 +1,19 @@
 #include <iostream>
-#include <glm/glm.hpp>
+#include <glm/glm.hpp> //GLM stands for 'OpenGL Mathematics' 
 #include <SDL.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 
 using namespace std;
-using glm::vec3; //GLM stands for 'OpenGL Mathematics' 
+using glm::vec3;
 using glm::mat3; //3x3 matrix
 
 struct Intersection{
 	vec3 position;
 	float distance;
 	int triangleIndex;
-	vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
+  vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
+
 };
 
 // ----------------------------------------------------------------------------
@@ -27,10 +28,9 @@ vec3 cameraPos( 0, 0, -2);
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.05; //constant for camera view change 
-vec3 lightPos( 0, 0, 0); // light position
-vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light intensity (power) for each color component
+vec3 lightPos( 0, 0, -0.5); // light position
+vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
 
-//vec3 indirectLight = 0.5f*vec3(1, 1, 1); //this should not be included in Phong
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -38,8 +38,8 @@ void Update();
 void Draw();
 bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
 //vec3 DirectLight( const Intersection& i ); 
-vec3 AmbientLight();
-
+vec3 EmmisiveComponent();
+vec3 AmbientComponent();
 
 int main( int argc, char* argv[] )
 {
@@ -135,20 +135,25 @@ void Draw(){
 			// 2. Call closestIntersection to get the closest intersesction in that direction
 			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
 			if(hit){
-			// 3. If true -> set the color of the pixel to the color of the intersected triangle
+			// 3. set the color of the pixel to the color of the intersected triangle
+				
+				//**** PHONG REFLECTION MODEL ****
+				// ** adds the four illumination components together **
+				// ** PutPixelSDL render the scene by multiplying intersected color with directLight **
+				// ** Direct light -> Phong = specular + diffuse + ambient + emissive **
+				// **** By: agnespet@kth.se 2020-05-19 ****
+				
 				vec3 color(triangles[closestInt.triangleIndex].color);
-				//vec3 directLight = DirectLight(closestInt);
-				vec3 ambient = AmbientLight();
-				PutPixelSDL( screen, x, y, color);//+ indirectLight));
-				// 
-				//	TODO - 200513-
-				//		PutPixelSDL should multiply the color with only directLight.
-				//		BUT the direct light should be computed using PHONG reflection model
-				//		AS: phong = specular + diffuse + ambient + emissive
-				// 		Like: 
-				//		PutPixelSDL( screen, x, y, color*phong);
+				// *** Uncoment when testing a specific illumination component ***
+				//vec3 emissive = EmmisiveComponent();
+				//vec3 ambient = AmbientComponent();
+				//vec3 diffuse = DiffuseComponent();
+				//vec3 specular = SpecularComponent;
+				//vec3 phong = emissive + ambient + diffuse + specular;
+				PutPixelSDL( screen, x, y, color); //*phong);
+        
 			}else{ 
-			// 4. Else -> set it to black 
+			// 4. set it to black 
 				vec3 black(0, 0, 0);
 				PutPixelSDL( screen, x, y, black );
 			}
@@ -161,12 +166,24 @@ void Draw(){
 	SDL_UpdateRect( screen, 0, 0, 0, 0 );
 }
 
-// **** AMBIENT COMPONENT ILLUMINATION ****
+// **** EMISSIVE ILLUMINATION COMPONENT ****
+// ** returns RGB - vector of the emissive illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
+vec3 EmmisiveComponent(){
+	float ce = 0; //emissive constant is 0 because the rendered scene is not emissive
+	
+	//TODO: what should be the light emissive intensity?
+	//using general light intensity for now
+	vec3 emmissiveLight = ce * lightColor;
+	return emmissiveLight;
+}
+
+// **** AMBIENT ILLUMINATION COMPONENT ****
 // ** returns [R,G,B]-triplet of the ambient illumination **
 // **** By: agnespet@kth.se 2020-05-19 ****
 // TODO: Use an intersection's surface material to find the ambient constant
 // TODO: Make the scene render a global ambient light intensity ([R,G,B]-triplet)
-vec3 AmbientLight(){
+vec3 AmbientComponent(){
 	//TODO: how to render the surface material?
 	//TODO: Should the ambient constant be specific for each intersection
 	
@@ -253,6 +270,3 @@ bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,I
 	}
 	return hit;
 }
-
-
-
