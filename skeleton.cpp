@@ -1,5 +1,5 @@
 #include <iostream>
-#include <glm/glm.hpp>
+#include <glm/glm.hpp> //GLM stands for 'OpenGL Mathematics' 
 #include <SDL.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
@@ -12,6 +12,8 @@ struct Intersection{
 	vec3 position;
 	float distance;
 	int triangleIndex;
+  vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
+
 };
 
 // ----------------------------------------------------------------------------
@@ -25,8 +27,8 @@ float focalLength = ((SCREEN_HEIGHT+SCREEN_WIDTH)/2)/2;
 vec3 cameraPos( 0, 0, -2);
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
-const float change = 0.01; //constant for camera view change 
-vec3 lightPos( 0, -0, -0.5); // light position
+const float change = 0.05; //constant for camera view change 
+vec3 lightPos( 0, 0, -0.5); // light position
 vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
 
 
@@ -37,6 +39,7 @@ void Draw();
 bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
 //vec3 DirectLight( const Intersection& i ); 
 vec3 EmmisiveComponent();
+vec3 AmbientComponent();
 
 int main( int argc, char* argv[] )
 {
@@ -175,6 +178,22 @@ vec3 EmmisiveComponent(){
 	return emmissiveLight;
 }
 
+// **** AMBIENT ILLUMINATION COMPONENT ****
+// ** returns [R,G,B]-triplet of the ambient illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
+// TODO: Use an intersection's surface material to find the ambient constant
+// TODO: Make the scene render a global ambient light intensity ([R,G,B]-triplet)
+vec3 AmbientComponent(){
+	//TODO: how to render the surface material?
+	//TODO: Should the ambient constant be specific for each intersection
+	
+	float ca = 0.1; //ambient constant
+	vec3 illumination_a; // Ambient illumination
+	illumination_a = ca * lightColor; // multiply constant with scene light intensity
+	return illumination_a;
+
+}
+
 //takes an intersection and returns the direct illumination vector
 vec3 DirectLight( const Intersection& i ){
 		Intersection a;
@@ -251,5 +270,3 @@ bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,I
 	}
 	return hit;
 }
-
-
