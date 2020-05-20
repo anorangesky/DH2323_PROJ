@@ -1,5 +1,5 @@
 #include <iostream>
-#include <glm/glm.hpp>
+#include <glm/glm.hpp> //GLM stands for 'OpenGL Mathematics' 
 #include <SDL.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
@@ -8,60 +8,56 @@ using namespace std;
 using glm::vec3;
 using glm::mat3; //3x3 matrix
 
-struct Intersection {
+struct Intersection{
 	vec3 position;
 	float distance;
 	int triangleIndex;
+  	// vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
+
 };
 
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
 const float SCREEN_WIDTH = 300;
 const float SCREEN_HEIGHT = 300;
-
 SDL_Surface* screen;
 int t;
 vector<Triangle> triangles; //used to store all triangles globally
-float focalLength = ((SCREEN_HEIGHT + SCREEN_WIDTH) / 2) / 2;
-vec3 cameraPos(0, 0, -2);
+float focalLength = ((SCREEN_HEIGHT+SCREEN_WIDTH)/2)/2;
+vec3 cameraPos( 0, 0, -2);
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
-const float change = 0.01; //constant for camera view change 
+const float change = 0.05; //constant for camera view change 
+vec3 lightPos(0, -0.5, -0.7); // light position
+vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
+# define M_PI  3.14159265358979323846  // This is from branch Diffuse --is it needed?
 
-//vec3 lightPos(0, 0, 0); // light position
-vec3 lightPos(0, -0.5, -0.7);
-vec3 lightColor = 14.f * vec3(1, 1, 1); //light power for each color component
-
-vec3 indirectLight = 0.5f*vec3(1, 1, 1); //this should not be included in Phong
-
-# define M_PI  3.14159265358979323846  // pi
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 void Update();
 void Draw();
-
-bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection);
+bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
 //vec3 DirectLight( const Intersection& i ); 
+vec3 EmmisiveComponent();
+vec3 AmbientComponent();
+vec3 DiffuseComponent(const Intersection& i);
 
-// PROJEKT
-vec3 DiffuseComp(const Intersection& i);
-//vec3 AmbientComp();
 
-int main(int argc, char* argv[])
+int main( int argc, char* argv[] )
 {
-	screen = InitializeSDL(SCREEN_WIDTH, SCREEN_HEIGHT);
+	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	// Start value for timer.
-	t = SDL_GetTicks();
+	t = SDL_GetTicks();	
 	//Fill the vector with triangles repr. a 3D model: 
-	LoadTestModel(triangles);
-
-	while (NoQuitMessageSDL()) {
+ 	LoadTestModel(triangles); 	
+	 
+	while( NoQuitMessageSDL() ){
 		Update();
 		Draw();
 	}
 
-	SDL_SaveBMP(screen, "screenshot.bmp");
+	SDL_SaveBMP( screen, "screenshot.bmp" );
 	return 0;
 }
 
@@ -69,79 +65,78 @@ void Update()
 {
 	// Compute frame time:
 	int t2 = SDL_GetTicks();
-	float dt = float(t2 - t);
+	float dt = float(t2-t);
 	t = t2;
-	cout << "	Agnes time: " << dt << " ms." << endl;
+	cout << "	Render time: " << dt << " ms." << endl;
 
-	Uint8* keystate = SDL_GetKeyState(0);
+	Uint8* keystate = SDL_GetKeyState( 0 );
 	vec3 right(R[0][0], R[0][1], R[0][2]);
 	vec3 down(R[1][0], R[1][1], R[1][2]);
 	vec3 forward(R[2][0], R[2][1], R[2][2]);
 
-	if (keystate[SDLK_UP]) {
+	if( keystate[SDLK_UP] ){
 		// move camera forward aka. along the z-axis
 		cameraPos.z += change;
 	}
-	if (keystate[SDLK_DOWN]) {
+	if( keystate[SDLK_DOWN] ){
 		// Move camera backward  aka. along the z-axis
 		cameraPos.z -= change;
 	}
-	if (keystate[SDLK_LEFT]) {
-		// Move camera to the left aka. along the x-axis
+	if( keystate[SDLK_LEFT] ){
+	// Move camera to the left aka. along the x-axis
 		yaw += change;
 	}
-	if (keystate[SDLK_RIGHT]) {
-		// Move camera to the right aka along the x-axis
+	if( keystate[SDLK_RIGHT] ){
+	// Move camera to the right aka along the x-axis
 		yaw -= change;
 	}
-	if (keystate[SDLK_w]) {
+	if(keystate[SDLK_w]){
 		//move light forward aka along z-axis
-		lightPos.z -= change * 5;
+		lightPos.z -= change*5;
 	}
-	if (keystate[SDLK_s]) {
+	if(keystate[SDLK_s]){
 		//move light backward aka along z-axis
-		lightPos.z += change * 5;
+		lightPos.z += change*5;
 	}
-	if (keystate[SDLK_d]) {
+	if(keystate[SDLK_d]){
 		//move light right aka along x-axis
-		lightPos.x += change * 5;
+		lightPos.x += change*5;
 	}
-	if (keystate[SDLK_a]) {
+	if(keystate[SDLK_a]){
 		//move light left aka along x-axis
-		lightPos.x -= change * 5;
+		lightPos.x -= change*5;
 	}
-	if (keystate[SDLK_q]) {
+	if(keystate[SDLK_q]){
 		//move light up aka along y-axis
-		lightPos.y -= change * 2;
+		lightPos.y -= change*2;
 	}
-	if (keystate[SDLK_e]) {
+	if(keystate[SDLK_e]){
 		//move light down aka along y-axis
-		lightPos.y += change * 2;
+		lightPos.y += change*2;
 	}
-
+	
 	//rotation around y-axis
 	R[0][0] = glm::cos(yaw);
 	R[2][0] = glm::sin(yaw);
 	R[0][2] = -glm::sin(yaw);
 	R[2][2] = glm::cos(yaw);
-
+	
 }
 
-void Draw() {
+void Draw(){
 	bool hit;
-	if (SDL_MUSTLOCK(screen))
-		SDL_LockSurface(screen);
-
+	if( SDL_MUSTLOCK(screen) )
+		SDL_LockSurface(screen);	
+	
 	Intersection closestInt;
 	// 1. loop through all pixels to compute the corresponding ray direction 
-	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-		for (int x = 0; x < SCREEN_WIDTH; ++x) {
-
+	for(int y = 0; y< SCREEN_HEIGHT; ++y){
+		for(int x = 0; x<SCREEN_WIDTH; ++x){
+			
 			//ray direction vector:
-			vec3 d(x - (SCREEN_WIDTH / 2), y - (SCREEN_HEIGHT / 2), focalLength);
+			vec3 d(x-(SCREEN_WIDTH/2) , y-(SCREEN_HEIGHT/2) , focalLength);
 			// 2. Call closestIntersection to get the closest intersesction in that direction
 			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
-
 			if(hit){
 			// 3. set the color of the pixel to the color of the intersected triangle
 				
@@ -152,26 +147,54 @@ void Draw() {
 				// **** By: agnespet@kth.se 2020-05-19 ****
 				
 				vec3 color(triangles[closestInt.triangleIndex].color);
-				// *** Uncoment when testing your implementation ***
+				// *** Uncoment when testing a specific illumination component ***
 				//vec3 emissive = EmmisiveComponent();
 				//vec3 ambient = AmbientComponent();
-				vec3 diffuse = DiffuseComponent();
+				//vec3 diffuse = DiffuseComponent();
 				//vec3 specular = SpecularComponent;
 				//vec3 phong = emissive + ambient + diffuse + specular;
-				PutPixelSDL( screen, x, y, color * diffuse); //*phong);
-
-			} else { 
+				PutPixelSDL( screen, x, y, color); //*phong);
+        
+			}else{ 
 			// 4. set it to black 
 				vec3 black(0, 0, 0);
-				PutPixelSDL(screen, x, y, black);
+				PutPixelSDL( screen, x, y, black );
 			}
 		}
 	}
 
-	if (SDL_MUSTLOCK(screen))
+		if( SDL_MUSTLOCK(screen) )
 		SDL_UnlockSurface(screen);
 
-	SDL_UpdateRect(screen, 0, 0, 0, 0);
+	SDL_UpdateRect( screen, 0, 0, 0, 0 );
+}
+
+// **** EMISSIVE ILLUMINATION COMPONENT ****
+// ** returns RGB - vector of the emissive illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
+vec3 EmmisiveComponent(){
+	float ce = 0; //emissive constant is 0 because the rendered scene is not emissive
+	
+	//TODO: what should be the light emissive intensity?
+	//using general light intensity for now
+	vec3 emmissiveLight = ce * lightColor;
+	return emmissiveLight;
+}
+
+// **** AMBIENT ILLUMINATION COMPONENT ****
+// ** returns [R,G,B]-triplet of the ambient illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
+// TODO: Use an intersection's surface material to find the ambient constant
+// TODO: Make the scene render a global ambient light intensity ([R,G,B]-triplet)
+vec3 AmbientComponent(){
+	//TODO: how to render the surface material?
+	//TODO: Should the ambient constant be specific for each intersection
+	
+	float ca = 0.1; //ambient constant
+	vec3 illumination_a; // Ambient illumination
+	illumination_a = ca * lightColor; // multiply constant with scene light intensity
+	return illumination_a;
+
 }
 
 // **** DIFFUSE COMPONENT ILLUMINATION ****
@@ -271,23 +294,3 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles
 	}
 	return hit;
 }
-
-/*
-Password: Döden i _________
-
-Det här meddelandet är krypterat.Du kan dekryptera och läsa det via
-https ://safemess.com/sv/?r=pJpcewX0G%2FJI
-----------------------------------------------------------------------
-
-5gMMg + RswV4Rb9cdPr93g / eFZ3buJk / K + MAcN2kkdYLQKX0Ic04YXGWvAo8Zz1EiXfzr
-pWLaQlb / 4Zg0gQrpvc + 6ATRyikKx3pv31oUW4lPJxgtXI5WP6AJyq3KMhaGtG1thLSFJ
-2oXvq / cz1Uo1cOo8jR40kMNYEgVUdLziLgr + u6APomy2vdqK40Qk05MuQH5tRYzKJ8Vl
-+ EdgrSqCrCfC7TFuwhGk1nuZecZy / gpBo / 7pU6UgliTB5IM + sG2blUO1Ft6zTwWJlWQC
-DfPF
-
-----------------------------------------------------------------------
-Det här meddelandet är krypterat.Du kan dekryptera och läsa det via
-https ://safemess.com/sv/?r=pJpcewX0G%2FJI
-*/
-
-
