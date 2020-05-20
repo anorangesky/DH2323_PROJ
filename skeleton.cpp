@@ -222,7 +222,7 @@ vec3 DiffuseComponent(const Intersection& i) {
 // ** takes the closest intersection of ray and surface and **
 // ** returns the intensity of the specular illumination as a 3D-vector **
 // **** By: vendelav@kth.se 2020-05-19 ****
-vec3 SpecularComp(const Intersection& i) {
+vec3 SpecularComponent(const Intersection& i) {
 
 	// Equation for computing the specular component
 	// Ispecular = cs * Ils * (r.normal . v.normal)^n
@@ -249,7 +249,8 @@ vec3 SpecularComp(const Intersection& i) {
 	float dotr = glm::dot(glm::normalize(r), glm::normalize(v));
 
 	// 3. The final step of the equation multiplying angle raised to the power of the shininess constant with our set variables
-	vec3 specularComp = cs * Ils * pow(dotr, n);
+	float powerShiny = pow(dotr, n);
+	vec3 specularComp = cs*Ils*powerShiny;
 	return specularComp;
 }
 
