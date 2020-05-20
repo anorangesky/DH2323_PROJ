@@ -1,4 +1,7 @@
 <h1 style="color: #5e9ca0;"><br />Project in course DM2323.</h1>
+<h2> Computer Graphics and Interaction </h>
+<p> Workbook: https://projectapvv.wordpress.com/ </p>
+
 <p><span style="font-weight: 400;">Phong reflection model describes the way a surface reflects light as a combination of ambient, diffuse, emissive, and specular shading. T</span><span style="font-weight: 400;">his project will compare the Phong reflection model, both visually and in rendering time, to the basic ray tracing that was implemented in Lab 2 (direct illumination, shadows, and approximated indirect illumination with a chosen constant term).</span></p>
 <blockquote>
   
