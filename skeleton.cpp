@@ -29,12 +29,13 @@ const float change = 0.01; //constant for camera view change
 vec3 lightPos( 0, -0, -0.5); // light position
 vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
 
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 void Update();
 void Draw();
 bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
-vec3 DirectLight( const Intersection& i ); 
+//vec3 DirectLight( const Intersection& i ); 
 vec3 EmmisiveComponent();
 
 int main( int argc, char* argv[] )
@@ -131,23 +132,25 @@ void Draw(){
 			// 2. Call closestIntersection to get the closest intersesction in that direction
 			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
 			if(hit){
-			// 3. If true -> set the color of the pixel to the color of the intersected triangle
-				vec3 color(triangles[closestInt.triangleIndex].color);
-
-				//	TODO - 200513-
-				//		PutPixelSDL should multiply the color with only directLight.
-				//		BUT the direct light should be computed using PHONG reflection model
-				//		AS: Phong = specular + diffuse + ambient + emissive
+			// 3. set the color of the pixel to the color of the intersected triangle
 				
-				vec3 emissive = EmmisiveComponent();
-				//vec3 ambient = null;
-				//vec3 diffuse = null;
-				//vec3 specular = null ;
-				vec3 phong = emissive; //+ ambient + diffuse + specular;
-				PutPixelSDL( screen, x, y, color*phong);
-
+				//**** PHONG REFLECTION MODEL ****
+				// ** adds the four illumination components together **
+				// ** PutPixelSDL render the scene by multiplying intersected color with directLight **
+				// ** Direct light -> Phong = specular + diffuse + ambient + emissive **
+				// **** By: agnespet@kth.se 2020-05-19 ****
+				
+				vec3 color(triangles[closestInt.triangleIndex].color);
+				// *** Uncoment when testing a specific illumination component ***
+				//vec3 emissive = EmmisiveComponent();
+				//vec3 ambient = AmbientComponent();
+				//vec3 diffuse = DiffuseComponent();
+				//vec3 specular = SpecularComponent;
+				//vec3 phong = emissive + ambient + diffuse + specular;
+				PutPixelSDL( screen, x, y, color); //*phong);
+        
 			}else{ 
-			// 4. Else -> set it to black 
+			// 4. set it to black 
 				vec3 black(0, 0, 0);
 				PutPixelSDL( screen, x, y, black );
 			}
