@@ -26,8 +26,8 @@ vec3 cameraPos( 0, 0, -2);
 mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.01; //constant for camera view change 
-vec3 lightPos( 0, 0, 0); // light position
-vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power for each color component
+vec3 lightPos( 0, -0, -0.5); // light position
+vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
 
 
 // ----------------------------------------------------------------------------
@@ -36,6 +36,7 @@ void Update();
 void Draw();
 bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
 //vec3 DirectLight( const Intersection& i ); 
+vec3 EmmisiveComponent();
 
 int main( int argc, char* argv[] )
 {
@@ -140,14 +141,14 @@ void Draw(){
 				// **** By: agnespet@kth.se 2020-05-19 ****
 				
 				vec3 color(triangles[closestInt.triangleIndex].color);
-				// *** Uncoment when testing your implementation ***
+				// *** Uncoment when testing a specific illumination component ***
 				//vec3 emissive = EmmisiveComponent();
 				//vec3 ambient = AmbientComponent();
 				//vec3 diffuse = DiffuseComponent();
 				//vec3 specular = SpecularComponent;
 				//vec3 phong = emissive + ambient + diffuse + specular;
 				PutPixelSDL( screen, x, y, color); //*phong);
-
+        
 			}else{ 
 			// 4. set it to black 
 				vec3 black(0, 0, 0);
@@ -160,6 +161,18 @@ void Draw(){
 		SDL_UnlockSurface(screen);
 
 	SDL_UpdateRect( screen, 0, 0, 0, 0 );
+}
+
+// **** EMISSIVE ILLUMINATION COMPONENT ****
+// ** returns RGB - vector of the emissive illumination **
+// **** By: agnespet@kth.se 2020-05-19 ****
+vec3 EmmisiveComponent(){
+	float ce = 0; //emissive constant is 0 because the rendered scene is not emissive
+	
+	//TODO: what should be the light emissive intensity?
+	//using general light intensity for now
+	vec3 emmissiveLight = ce * lightColor;
+	return emmissiveLight;
 }
 
 //takes an intersection and returns the direct illumination vector
@@ -238,23 +251,5 @@ bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,I
 	}
 	return hit;
 }
-
-/*
---------- SECRET MSG ------------
-This message is encrypted. You can decrypt and read it at
-https://safemess.com/?r=sdYql9oglCpI&t=1gEbdfXeu15XgcNmEsBXuA 
-----------------------------------------------------------------------
-
-OQLiA/Xeu15mcPdB5evYOs0unZgVOZRDJshEDdE8EKbQg5IqtU9Fmn44xsQ3JeNlFKhA
-LZaWlJDZxw7Gqx156z17oRy66YEo3MdLrqU3ECUrp4/4BICSq/DlWgWQKl3z7qflIbda
-/bjCvS6OyikpUyRubVrOHpcKDiABvHeIAhfjQ779isAtcIkFGOOQEeBVS5XzkgpwFbr+
-esnOFIEbDvsyOvougj6AMcnvWfdotJWjYBIe43F5NCoKmwGTXkefYaBF/bq04oT2
-
-----------------------------------------------------------------------
-This message is encrypted. You can decrypt and read it at
-https://safemess.com/?r=sdYql9oglCpI&t=1gEbdfXeu15XgcNmEsBXuA 
-
-
-*/
 
 
