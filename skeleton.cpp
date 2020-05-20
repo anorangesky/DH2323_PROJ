@@ -13,7 +13,6 @@ struct Intersection{
 	float distance;
 	int triangleIndex;
   	// vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
-
 };
 
 // ----------------------------------------------------------------------------
@@ -30,8 +29,7 @@ float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.05; //constant for camera view change 
 vec3 lightPos(0, -0.5, -0.7); // light position
 vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
-# define M_PI  3.14159265358979323846  // This is from branch Diffuse --is it needed?
-
+#define M_PI  3.14159265358979323846  // This is from branch Diffuse --is it needed?
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -200,7 +198,7 @@ vec3 AmbientComponent(){
 // **** DIFFUSE COMPONENT ILLUMINATION ****
 // ** returns the intensity of the diffuse illumination as a 3D-vector **
 // **** By: vendelav@kth.se 2020-05-19 ****
-vec3 DiffuseComp(const Intersection& i) {
+vec3 DiffuseComponent(const Intersection& i) {
 
 	// The equation to use for the diffuse component:
 	// Idiffuse = kd * Ild * (l.normal . n)
@@ -218,7 +216,9 @@ vec3 DiffuseComp(const Intersection& i) {
 	return diffuseComp;
 }
 
-//takes an intersection and returns the direct illumination vector
+//**** From Lab2 ****
+//** takes an intersection **
+//** returns the direct illumination vector **
 vec3 DirectLight(const Intersection& i) {
 	Intersection a;
 	vec3 D(0, 0, 0); //init value of direction
@@ -245,6 +245,8 @@ vec3 DirectLight(const Intersection& i) {
 	return D;
 }
 
+//**** From Lab2 ****
+//** returns true or false if an intersection has occurred **
 bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
 	bool hit = false;
 	float m = std::numeric_limits<float>::max();
