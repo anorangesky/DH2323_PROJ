@@ -28,7 +28,7 @@ mat3 R;	//controls rotation of camera
 float yaw = 0;	//stores angle that camera should rotate
 const float change = 0.05; //constant for camera view change 
 vec3 lightPos(0, -0.5, -0.7); // light position
-vec3 lightColor = 1.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
+vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
 #define M_PI  3.14159265358979323846  // This is from branch Diffuse --is it needed?
 
 // ----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ void Draw(){
 				vec3 ambient = AmbientComponent();
 				vec3 diffuse = DiffuseComponent(closestInt);
 				vec3 specular = SpecularComponent(closestInt);
-				vec3 phong = emissive + ambient + diffuse + specular;
+				vec3 phong = ambient; //+ ambient + diffuse + specular;
 				PutPixelSDL( screen, x, y, color *phong);
         
 			}else{ 
