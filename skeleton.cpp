@@ -6,13 +6,13 @@
 
 using namespace std;
 using glm::vec3;
-using glm::mat3; //3x3 matrix
+using glm::mat3; // 3x3 matrix
 
-struct Intersection{
+struct Intersection {
 	vec3 position;
 	float distance;
 	int triangleIndex;
-  	// vec3 surfaceMaterial; //TODO: how can I get the surface material from the rendered image?
+	// vec3 surfaceMaterial; //TODO: How to get the surface material from the rendered image?
 };
 
 // ----------------------------------------------------------------------------
@@ -20,126 +20,68 @@ struct Intersection{
 const float SCREEN_WIDTH = 300;
 const float SCREEN_HEIGHT = 300;
 SDL_Surface* screen;
-int t;
+int t; //timer
 vector<Triangle> triangles; //used to store all triangles globally
-float focalLength = ((SCREEN_HEIGHT+SCREEN_WIDTH)/2)/2;
-vec3 cameraPos( 0, 0, -2);
-mat3 R;	//controls rotation of camera
-float yaw = 0;	//stores angle that camera should rotate
-const float change = 0.05; //constant for camera view change 
-vec3 lightPos(0, -0.5, -0.7); // light position
-vec3 lightColor = 5.f * vec3( 1, 1, 1 ); //light power (intensity) for each color component
-#define M_PI  3.14159265358979323846  // This is from branch Diffuse --is it needed?
+float focalLength = ((SCREEN_HEIGHT + SCREEN_WIDTH) / 2) / 2;
+vec3 cameraPos(0, 0, -2);
+vec3 lightPos(0, 0, -1); // light position
+vec3 lightColor = 1.f * vec3(1, 1, 1); //light power (intensity) for each color component
+Intersection a; // used when computing shadow in DiffuseComponent and SpecularComponent
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 void Update();
 void Draw();
-bool ClosestIntersection(vec3 start,vec3 dir,const vector<Triangle>& triangles,Intersection& closestIntersection);
-//vec3 DirectLight( const Intersection& i ); 
+bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection);
 vec3 EmmisiveComponent();
 vec3 AmbientComponent();
 vec3 DiffuseComponent(const Intersection& i);
 vec3 SpecularComponent(const Intersection& i);
 
-
-
-int main( int argc, char* argv[] )
-{
-	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
+//** from lab 2 **
+int main(int argc, char* argv[]){
+	screen = InitializeSDL(SCREEN_WIDTH, SCREEN_HEIGHT);
 	// Start value for timer.
-	t = SDL_GetTicks();	
-	//Fill the vector with triangles repr. a 3D model: 
- 	LoadTestModel(triangles); 	
-	 
-	while( NoQuitMessageSDL() ){
+	t = SDL_GetTicks();
+	// Fill the vector with triangles repr. a 3D model: 
+	LoadTestModel(triangles);
+
+	while (NoQuitMessageSDL()) {
 		Update();
 		Draw();
 	}
 
-	SDL_SaveBMP( screen, "screenshot.bmp" );
+	SDL_SaveBMP(screen, "screenshot.bmp");
 	return 0;
 }
 
-void Update()
-{
+//** from lab 2 **
+//TODO: implement code to move the light source and camera around
+void Update(){
 	// Compute frame time:
 	int t2 = SDL_GetTicks();
-	float dt = float(t2-t);
+	float dt = float(t2 - t);
 	t = t2;
 	cout << "	Render time: " << dt << " ms." << endl;
-
-	Uint8* keystate = SDL_GetKeyState( 0 );
-	vec3 right(R[0][0], R[0][1], R[0][2]);
-	vec3 down(R[1][0], R[1][1], R[1][2]);
-	vec3 forward(R[2][0], R[2][1], R[2][2]);
-
-	if( keystate[SDLK_UP] ){
-		// move camera forward aka. along the z-axis
-		cameraPos.z += change;
-	}
-	if( keystate[SDLK_DOWN] ){
-		// Move camera backward  aka. along the z-axis
-		cameraPos.z -= change;
-	}
-	if( keystate[SDLK_LEFT] ){
-	// Move camera to the left aka. along the x-axis
-		yaw += change;
-	}
-	if( keystate[SDLK_RIGHT] ){
-	// Move camera to the right aka along the x-axis
-		yaw -= change;
-	}
-	if(keystate[SDLK_w]){
-		//move light forward aka along z-axis
-		lightPos.z -= change*5;
-	}
-	if(keystate[SDLK_s]){
-		//move light backward aka along z-axis
-		lightPos.z += change*5;
-	}
-	if(keystate[SDLK_d]){
-		//move light right aka along x-axis
-		lightPos.x += change*5;
-	}
-	if(keystate[SDLK_a]){
-		//move light left aka along x-axis
-		lightPos.x -= change*5;
-	}
-	if(keystate[SDLK_q]){
-		//move light up aka along y-axis
-		lightPos.y -= change*2;
-	}
-	if(keystate[SDLK_e]){
-		//move light down aka along y-axis
-		lightPos.y += change*2;
-	}
-	
-	//rotation around y-axis
-	R[0][0] = glm::cos(yaw);
-	R[2][0] = glm::sin(yaw);
-	R[0][2] = -glm::sin(yaw);
-	R[2][2] = glm::cos(yaw);
-	
 }
 
-void Draw(){
+//** from lab 2 **
+void Draw() {
 	bool hit;
-	if( SDL_MUSTLOCK(screen) )
-		SDL_LockSurface(screen);	
-	
+	if (SDL_MUSTLOCK(screen))
+		SDL_LockSurface(screen);
+
 	Intersection closestInt;
-	// 1. loop through all pixels to compute the corresponding ray direction 
-	for(int y = 0; y< SCREEN_HEIGHT; ++y){
-		for(int x = 0; x<SCREEN_WIDTH; ++x){
-			
+	// loop through all pixels to compute the corresponding ray direction 
+	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+		for (int x = 0; x < SCREEN_WIDTH; ++x) {
+
 			//ray direction vector:
-			vec3 d(x-(SCREEN_WIDTH/2) , y-(SCREEN_HEIGHT/2) , focalLength);
-			// 2. Call closestIntersection to get the closest intersesction in that direction
-			hit = ClosestIntersection(cameraPos *R, d, triangles, closestInt);
-			if(hit){
-			// 3. set the color of the pixel to the color of the intersected triangle
-				
+			vec3 d(x - (SCREEN_WIDTH / 2), y - (SCREEN_HEIGHT / 2), focalLength);
+			//call closestIntersection to get the closest intersesction in that direction
+			hit = ClosestIntersection(cameraPos, d, triangles, closestInt);
+			if (hit) {
+
 				//**** PHONG REFLECTION MODEL ****
 				// ** adds the four illumination components together **
 				// ** PutPixelSDL render the scene by multiplying intersected color with directLight **
@@ -150,31 +92,29 @@ void Draw(){
 				vec3 ambient = AmbientComponent();
 				vec3 diffuse = DiffuseComponent(closestInt);
 				vec3 specular = SpecularComponent(closestInt);
-				vec3 phong = ambient; //+ ambient + diffuse + specular;
-				PutPixelSDL( screen, x, y, color *phong);
-        
-			}else{ 
-			// 4. set it to black 
+				vec3 phong = emissive + ambient + diffuse + specular;
+				PutPixelSDL(screen, x, y, color * phong);
+
+			}
+			else { 
 				vec3 black(0, 0, 0);
-				PutPixelSDL( screen, x, y, black );
+				PutPixelSDL(screen, x, y, black);
 			}
 		}
 	}
 
-		if( SDL_MUSTLOCK(screen) )
+	if (SDL_MUSTLOCK(screen))
 		SDL_UnlockSurface(screen);
 
-	SDL_UpdateRect( screen, 0, 0, 0, 0 );
+	SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
 // **** EMISSIVE ILLUMINATION COMPONENT ****
 // ** returns RGB - vector of the emissive illumination **
 // **** By: agnespet@kth.se 2020-05-19 ****
-vec3 EmmisiveComponent(){
+// TODO1: Use an intersection's surface material to find the emissive constant
+vec3 EmmisiveComponent() {
 	float ce = 0; //emissive constant is 0 because the rendered scene is not emissive
-	
-	//TODO: what should be the light emissive intensity?
-	//using general light intensity for now
 	vec3 emmissiveLight = ce * lightColor;
 	return emmissiveLight;
 }
@@ -182,123 +122,86 @@ vec3 EmmisiveComponent(){
 // **** AMBIENT ILLUMINATION COMPONENT ****
 // ** returns [R,G,B]-triplet of the ambient illumination **
 // **** By: agnespet@kth.se 2020-05-19 ****
-// TODO: Use an intersection's surface material to find the ambient constant
-// TODO: Make the scene render a global ambient light intensity ([R,G,B]-triplet)
-vec3 AmbientComponent(){
-	//TODO: how to render the surface material?
-	//TODO: Should the ambient constant be specific for each intersection
-	
-	float ca = 0.1; //ambient constant
+// TODO: Use surface material to find the ambient constant
+vec3 AmbientComponent() {
+	float ca = 0.1; // Ambient constant
 	vec3 illumination_a; // Ambient illumination
 	illumination_a = ca * lightColor; // multiply constant with scene light intensity
 	return illumination_a;
-
 }
 
 // **** DIFFUSE COMPONENT ILLUMINATION ****
-// ** returns the intensity of the diffuse illumination as a 3D-vector **
+// ** takes the closest intersection of light ray and surface and **
+// ** returns the intensity of the diffuse illumination as a vector **
 // **** By: vendelav@kth.se 2020-05-19 ****
 vec3 DiffuseComponent(const Intersection& i) {
 
 	// The equation to use for the diffuse component:
-	// Idiffuse = kd * Ild * (l.normal . n)
-	Intersection a; // used when computing for shadow
+	// Idiffuse = cd * lightColor * (l.normal . n)
+
 	float cd = 1.0; // Diffuse surface constant
-	vec3 Ild(1, 1, 1); // Diffuse light intensity //QUESTION: why are you not using: 'lightColor'?
 
 	vec3 l = lightPos - i.position; // Direction from surface to lightsource
 	vec3 n = triangles[i.triangleIndex].normal; // Surface normal
 	float dot = glm::dot(glm::normalize(l), n); // Angle between vector from surface to light source and surface normal
 	// If the surface is perpendicular or turned away from the light source (angle <= 0) 
 	// return 0, otherwise the angle so we can color the surface accordingly
-	dot = dot <= 0 ? 0.0f : dot;
+	dot = dot < 0 ? 0.0f : dot;
 
-	//** all black shadow, agnes verison **
+	//** all black shadow, agnes' version **
 	//calculate the unit vector describing the direction from the surface to the light source
 	float rDist = glm::distance(lightPos, i.position);
 	ClosestIntersection(i.position, l, triangles, a);
 	//surface is in shadow if the distance to closest intersecting surface is closer than the light source
 	if (a.triangleIndex != i.triangleIndex && a.distance < rDist) {
 		// In shadow -> return color black [0,0,0]
-		vec3 black(0,0,0);
+		vec3 black(0, 0, 0);
 		return black;
 	}
-
-	//vec3 diffuseComp = cd * Ild * dot;
-	vec3 diffuseComp = cd * lightColor * dot; //agnes version 
+	vec3 diffuseComp = cd * lightColor * dot;
 	return diffuseComp;
 }
 
 // **** SPECULAR COMPONENT ILLUMINATION ****
-// ** takes the closest intersection of ray and surface and **
-// ** returns the intensity of the specular illumination as a 3D-vector **
+// ** takes the closest intersection of light ray and surface and **
+// ** returns the intensity of the specular illumination as a vector **
 // **** By: vendelav@kth.se 2020-05-19 ****
 // TODO1: (added by Agnes) add gloss on the red and blue boxes, I think we should use ClosestIntersection() for that 
-// TODO2: (Added by Agnes) How is this function fucking with the shadow not being black in diffuse()?
-// TODO3: (Added by Agnes) Why do we have 4 light-sources? (one for each wall) (check description in "implementation notes/phong") (change to 100px when moving around)
+// TODO2: (Added by Agnes) Invest why we have 4 light-sources? (one on each wall) (check description in "implementation notes/phong") (change to 100px when moving around)
 vec3 SpecularComponent(const Intersection& i) {
 
 	// Equation for computing the specular component
-	// Ispecular = cs * Ils * (r.normal . v.normal)^n
+	// Ispecular = cs * lightColor * (r.normal . v.normal)^n
 
-	float cs = 1.0; // Specular surface constant //QUESTION: why this value?
-	vec3 Ils = vec3(1, 1, 1); // Light specular intensity //QUESTION: why are you not using: 'lightColor'?
+	float cs = 0.8; // Specular surface constant
+	int n = 64; // Shininess constant, regulates size of specular highlights
 
-	int n = 32; // Shininess constant, regulates size of specular highlights //QUESTION: why 32?
-
-	// 1. To compute r we need angle between surface normal and vector from light source to surface
-	// r = (2 * dot) * surfaceNormal - dir
-
-	vec3 dir = lightPos - i.position; // Direction from surface to lightsource
+	vec3 dir = glm::normalize(lightPos - i.position); // Direction from surface to lightsource
 	vec3 surfaceNormal = triangles[i.triangleIndex].normal; // Surface normal
-	float dot = glm::dot(glm::normalize(dir), surfaceNormal); // Angle between vector from surface to light source and surface normal
+
+	// Lights reflected direction, negated because it should point from light source towards surface
+	vec3 reflDir = glm::reflect(-dir, surfaceNormal);
+	vec3 v = glm::normalize(cameraPos - i.position); // Direction from camera to surface
+	float dot = glm::dot(reflDir, v); // Angle between the direction of the reflection and direction from the camera to the surface
+
 	// If the light rays doesn't hit a point on the surface (angle <= 0) 
 	// return 0, otherwise return the angle so we can color the surface accordingly
-	dot = dot <= 0 ? 0.0f : dot;
+	dot = dot < 0 ? 0.0f : dot;
 
-	vec3 r = (2 * dot) * surfaceNormal - dir; // The direction a perfectly reflected ray of light would take
-
-	// 2. To get v we need to get the vector from the surface to the camera position //QUESTION: what is 'v' ? 
-	vec3 v = cameraPos - i.position;
-	// Dot product between direction of reflected ray of light and vector from surface to camera position
-	float dotr = glm::dot(glm::normalize(r), glm::normalize(v));
-
-	// 3. The final step of the equation multiplying angle raised to the power of the shininess constant with our set variables
-	float powerShiny = pow(dotr, n);
-	//vec3 specularComp = cs*Ils*powerShiny;
-	vec3 specularComp = cs * lightColor *powerShiny;
+	// All black shadows
+	// Using the global Intersection 'a' as it was calculated in DiffuseComponent using function ClosestIntersection()
+	// Calculate the unit vector describing the direction from the surface to the light source
+	float rDist = glm::distance(lightPos, i.position);
+	//surface is in shadow if the distance to closest intersecting surface is closer than the light source
+	if (a.triangleIndex != i.triangleIndex && a.distance < rDist) {
+		// In shadow -> return color black [0,0,0]
+		vec3 black(0, 0, 0);
+		return black;
+	}
+	float shinePower = pow(dot, n);
+	vec3 specularComp = cs * lightColor * shinePower;
 
 	return specularComp;
-}
-
-//			NOT IN USE, REMOVE BF SUBMISSION				!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//**** From Lab2 ****
-//** takes an intersection **
-//** returns the direct illumination vector **
-vec3 DirectLight(const Intersection& i) {
-	Intersection a;
-	vec3 D(0, 0, 0); //init value of direction
-
-	// 1. calculate the unit vector describing the direction from the surface to the light source
-	vec3 r = lightPos - i.position; // direction from surface (pos) to lightsource
-	float rDist = glm::distance(lightPos, i.position);
-
-	ClosestIntersection(i.position, r, triangles, a);
-	//surface is in shadow if the distance to closest intersecting surface is closer than the light source
-	if (a.triangleIndex != i.triangleIndex && a.distance <= rDist) {
-		// In shadow -> return direction = [0,0,0]
-		return D;
-	}
-	//	2. the index (i.index) is used in triangles[i.index].normal to get the normal of the surface
-	vec3 n = triangles[i.triangleIndex].normal;
-	//	3. compute the direction using "D = (P * max(r dot n, 0))/4*pi*r²" 
-	// 
-	float dot = glm::dot(glm::normalize(r), n);
-	D = (lightColor * glm::max(dot, 0.f));		// GLM instead of SDL
-	float fourPi = 4 * M_PI;					// M_PI ADDED AS GLOBAL VARIABLE
-	D = D / (fourPi *rDist*rDist);
-	// 4. return updated direciton value
-	return D;
 }
 
 //**** From Lab2 ****
@@ -339,7 +242,7 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles
 			hit = true;
 			//and update closestIntersection with:
 			vec3 r2 = start + (t*dir);
-			float distance = glm::distance(r2, start); 
+			float distance = glm::distance(r2, start);
 			if (distance <= closestIntersection.distance) {
 				// 1. 3D position of the closest intersection
 				closestIntersection.position = r2;
